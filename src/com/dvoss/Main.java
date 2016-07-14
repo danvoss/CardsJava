@@ -1,6 +1,7 @@
 package com.dvoss;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
@@ -61,6 +62,7 @@ public class Main {
                 .map(card -> card.rank.ordinal())
                 .sorted((c1, c2) -> Integer.compare(c1.intValue(), c2.intValue()))
                 .collect(Collectors.toCollection(ArrayList<Integer>::new));
+        // zach's code below -- cf. clojure version
         ArrayList<Integer> populatedList = new ArrayList<>();
         int rank = ranksList.get(0);
         while (populatedList.size() < ranksList.size()) {
@@ -68,7 +70,6 @@ public class Main {
             rank++;
         }
         return ranksList.equals(populatedList);
-        // cf. clojure version
     }
 
     static boolean isStraightFlush(HashSet<Card> hand) {
@@ -78,11 +79,35 @@ public class Main {
         return false;
     }
 
-    static boolean isThreeOfAKind() {
+    static boolean isThreeOfAKind(HashSet<Card> hand) {
+        ArrayList<Integer> ranksList = hand.stream()
+                .map(card -> card.rank.ordinal())
+                .collect(Collectors.toCollection(ArrayList<Integer>::new));
+        for (Integer r : ranksList) {
+            int n = Collections.frequency(ranksList, r);
+            if (n == 3) {
+                return true;
+            }
+        }
         return false;
     }
 
-    static boolean isTwoPair() {
+    static boolean isTwoPair(HashSet<Card> hand) {
+        ArrayList<Integer> ranksList = hand.stream()
+                .map(card -> card.rank.ordinal())
+                .collect(Collectors.toCollection(ArrayList<Integer>::new));
+
+        for (Integer c : ranksList) {
+            int n = Collections.frequency(ranksList, c);
+
+            HashSet<Card.Rank> set = hand.stream()
+                    .map(card -> card.rank)
+                    .collect(Collectors.toCollection(HashSet<Card.Rank>::new));
+
+            if ((n == 2) && (set.size() == 2)) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -108,19 +133,19 @@ public class Main {
                 .filter(Main::isStraightFlush)
                 .collect(Collectors.toCollection(HashSet<HashSet<Card>>::new));
 
-//        HashSet<HashSet<Card>> threeOfAKind = hands.stream()
-//                .filter(Main::isThreeOfAKind)
-//                .collect(Collectors.toCollection(HashSet<HashSet<Card>>::new));
-//
-//        HashSet<HashSet<Card>> twoPair = hands.stream()
-//                .filter(Main::isTwoPair)
-//                .collect(Collectors.toCollection(HashSet<HashSet<Card>>::new));
+        HashSet<HashSet<Card>> threeOfAKind = hands.stream()
+                .filter(Main::isThreeOfAKind)
+                .collect(Collectors.toCollection(HashSet<HashSet<Card>>::new));
+
+        HashSet<HashSet<Card>> twoPair = hands.stream()
+                .filter(Main::isTwoPair)
+                .collect(Collectors.toCollection(HashSet<HashSet<Card>>::new));
 
         System.out.println(flushes.size());
         System.out.println(fourOfAKind.size());
         System.out.println(straight.size());
         System.out.println(straightFlush.size());
-//        System.out.println(threeOfAKind.size());
-//        System.out.println(twoPair.size());
+        System.out.println(threeOfAKind.size());
+        System.out.println(twoPair.size());
     }
 }
